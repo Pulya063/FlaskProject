@@ -1,0 +1,169 @@
+/* ===== Reset & base ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #f0f2f5, #e6e9ee);
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
+}
+
+/* ===== Layout ===== */
+.content {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+}
+
+.container {
+    background: #ffffff;
+    padding: 36px 32px;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 420px;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,0.12),
+        0 4px 10px rgba(0,0,0,0.06);
+}
+
+/* ===== Title ===== */
+.container h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 600;
+    font-size: 22px;
+    color: #222;
+}
+
+.message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+
+    display: flex;
+    align-items: center;
+
+    background: #E8F5E9;
+    color: #2E7D32;
+
+    border: 1px solid #A5D6A7;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* ✅ успіх */
+.message--success {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border-color: #A5D6A7;
+}
+
+/* ❌ помилка */
+.message--error {
+    background: #FDECEA;
+    color: #C62828;
+    border-color: #F5C6CB;
+}
+
+/* ===== Form ===== */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ===== Inputs ===== */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="file"],
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 14px;
+
+    border: 1px solid #d0d0d0;
+    border-radius: 10px;
+    background: #fafafa;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+/* Focus */
+input:focus,
+textarea:focus {
+    outline: none;
+    background: #fff;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.18);
+}
+
+/* Placeholder */
+::placeholder {
+    color: #999;
+    font-size: 13px;
+}
+
+/* ===== Textarea ===== */
+textarea {
+    resize: vertical;
+    min-height: 90px;
+}
+
+/* ===== File input ===== */
+input[type="file"] {
+    padding: 8px;
+    background: #fff;
+}
+
+/* ===== Button ===== */
+button {
+    margin-top: 10px;
+    padding: 14px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: linear-gradient(135deg, #4CAF50, #43a047);
+    color: #fff;
+
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+
+    cursor: pointer;
+    transition:
+        transform 0.1s ease,
+        box-shadow 0.1s ease,
+        background 0.2s ease;
+}
+
+/* Hover */
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(76, 175, 80, 0.35);
+}
+
+/* Active */
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(76, 175, 80, 0.25);
+}

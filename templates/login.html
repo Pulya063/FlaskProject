@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
+</head>
+<body>
+  <section class="content">
+        <header> {% block header %}{% endblock %} </header>
+        <div class="container">
+            <h2>Login</h2>
+
+            <form action="/login" method="post" enctype="multipart/form-data">
+                <input type="text" name="login" placeholder="Логін" required>
+                <input type="password" name="password" placeholder="Пароль" required>
+
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </section>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
+
+    <title>{% block title %}{% endblock %} - Register Page</title>
+</head>
+<body>
+    <section class="content">
+        <div class="container">
+            <h2>Register</h2>
+
+            <form action="/login" method="post" enctype="multipart/form-data">
+                <input type="text" name="first_name" placeholder="Ім'я" required>
+                <input type="text" name="last_name" placeholder="Прізвище" required>
+                <input type="text" name="login" placeholder="Логін" required>
+                <input type="password" name="password" placeholder="Пароль" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="tel" name="phone_number" placeholder="Номер телефону">
+                <input type="date" id="birth_date" name="birth_date" placeholder="Дата народження">
+                <input type="file" name="photo">
+                <textarea name="additional_info" placeholder="Додаткова інформація"></textarea>
+
+                <button type="submit">Зберегти</button>
+            </form>
+        </div>
+    </section>
+</html>
