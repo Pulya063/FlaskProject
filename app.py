@@ -1,4 +1,5 @@
-from flask import Flask, request, session, render_template
+import functools
+from flask import Flask, request, session, render_template, redirect, url_for, flash
 import sqlite3
 
 app = Flask(__name__)
@@ -23,7 +24,16 @@ class Connection_db:
         self.conn.commit()
         self.conn.close()
 
+def login_check(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if session.get('logged_in'):
+            return func(*args, **kwargs)
+        else:
+            return redirect(url_for('login_page'))
+    return wrapper
 @app.route('/', methods=['GET'])
+@login_check
 def main_page():
     with Connection_db() as cur:
         res = cur.execute(f'SELECT * FROM film ORDER BY id DESC LIMIT 10').fetchall()
@@ -55,13 +65,13 @@ def user_register():
         birth_date = request.form['birth_date']
         additional_info = request.form['additional_info']
         with Connection_db() as cur:
-            res = cur.execute('INSERT INTO user (first_name, last_name, login, password, email, phone_number, birth_date, additional_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            cur.execute('INSERT INTO user (first_name, last_name, login, password, email, phone_number, birth_date, additional_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                             (first_name, last_name, login, password, email, phone_number, birth_date, additional_info))
     return render_template('message.html', details="User registration successful", type="success")
 
 @app.route('/login', methods=['GET'])
 def login_page():
-    return render_template('login.html', header="Login")
+    return render_template('login.html')
 
 @app.route('/login', methods=['POST'])
 def user_login_post():
@@ -69,14 +79,13 @@ def user_login_post():
     password = request.form['password']
 
     with Connection_db() as cur:
-        if cur.execute(
-                'SELECT 1 FROM user WHERE login = ? or password = ?',
-                (login, password, )).fetchone() is None:
-            return render_template('message.html', details="Login or password incorrect", type="error")
-
-    with Connection_db() as cur:
         cur.execute("select * from user where login=? and password=?", (login, password,))
         result = cur.fetchone()
+
+    if result is None:
+        flash('Невірний логін або пароль. Спробуйте ще раз.', 'error')
+
+        return redirect(url_for('login_page'))
 
     session['user_id'] = result['id']
     session['logged_in'] = True
@@ -97,6 +106,7 @@ def users():
     return ""
 
 @app.route('/users/<int:user_id>', methods=['GET'])
+@login_check
 def user_profile(user_id):
     if request.method == 'POST':
         first_name = request.form['fname']
@@ -138,14 +148,36 @@ def user_profile(user_id):
 
 
 @app.route('/users/<int:user_id>', methods=['DELETE'])
+@login_check
 def user_delete(user_id):
     return f'User {user_id} delete!'
 
 @app.route('/films', methods=['GET'])
 def films():
+    filter_params = request.args
+    filter_list_text = []
     with Connection_db() as cur:
-        res = cur.execute('SELECT * FROM film').fetchall()
-    return f"All films: {",".join(i for i in map(str, res))}"
+        countries = cur.execute(f'select * from country').fetchall()
+
+    for key, value in filter_params.items():
+        if value:
+            if key == 'name':
+                filter_list_text.append(f"name like '%{value}%'")
+            else:
+                filter_list_text.append(f"{key}={value}")
+
+    if filter_params:
+        search_query = ""
+        search_query = " and ".join(filter_list_text)
+        with Connection_db() as cur:
+            result = cur.execute(f'select * from film where {search_query} order by id desc').fetchall()
+        if result is None:
+            return render_template('message.html', details="Film not found", type="error")
+    with Connection_db() as cur:
+        result = cur.execute('select * from film').fetchall()
+    return render_template('film.html', films=result, countries=countries)
+
+
 
 @app.route('/films/<int:film_id>', methods=['PUT', 'GET'])
 def film_edit(film_id):
@@ -190,6 +222,7 @@ def film_ratings_delete(film_id, feedback_id):
     return f'Film {film_id} ratings {feedback_id}!'
 
 @app.route('/users/<int:user_id>/lists', methods=['GET', 'POST'])
+@login_check
 def user_lists(user_id):
     if request.method == 'GET':
         with Connection_db() as cur:
@@ -198,24 +231,28 @@ def user_lists(user_id):
     return f'The received method is POST'
 
 @app.route('/users/<int:user_id>/lists/<int:list_id>', methods=['DELETE'])
+@login_check
 def list_delete(user_id, list_id):
     return f'User {user_id} list {list_id} have been delete!'
 
 @app.route('/users/<int:user_id>/lists/<int:list_id>', methods=['GET'])
+@login_check
 def list_show(user_id, list_id):
     with Connection_db() as cur:
         res = cur.execute(f'SELECT name, genre FROM film join film_list on film.id = film_list.film_id WHERE film_list.list_id= ?', (list_id,)).fetchall()
     return f'User {user_id} list item {list_id} have such films {",".join(i for i in res)}'
 
 @app.route('/users/<int:user_id>/lists/<int:list_id>', methods=['POST'])
+@login_check
 def create_list(user_id, list_id):
     return f'User {user_id} list item {list_id}!'
 
 
 @app.route('/users/<int:user_id>/lists/<int:list_id>/<int:film_id>', methods=['DELETE'])
+@login_check
 def user_list_item_delete(user_id, list_id, film_id):
     return f'User {user_id} list item {list_id} have been deleted!'
 
 
 if __name__ == '__main__':
-    app.run(debug=True, reload=True)
+    app.run(port=5000)

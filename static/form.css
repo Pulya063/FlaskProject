@@ -73,6 +73,7 @@ body {
 
 /* ❌ помилка */
 .message--error {
+    padding: 10px;
     background: #FDECEA;
     color: #C62828;
     border-color: #F5C6CB;

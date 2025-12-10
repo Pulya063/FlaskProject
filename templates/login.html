@@ -7,11 +7,20 @@
 </head>
 <body>
   <section class="content">
-        <header> {% block header %}{% endblock %} </header>
         <div class="container">
             <h2>Login</h2>
-
-            <form action="/login" method="post" enctype="multipart/form-data">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <ul class="flashes">
+                    <section class="content">
+                            {% for category, message in messages %}
+                                <div class="message--{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                    </section>
+                </ul>
+              {% endif %}
+            {% endwith %}
+            <form action="/login" method="post">
                 <input type="text" name="login" placeholder="Логін" required>
                 <input type="password" name="password" placeholder="Пароль" required>
 
