@@ -1,7 +1,10 @@
 import functools
 from flask import Flask, request, session, render_template, redirect, url_for, flash
+from sqlalchemy import select, insert, update, delete
 import sqlite3
-# from sqlalchemy import select, insert, update, delete
+from models import *
+import database
+
 app = Flask(__name__)
 app.secret_key = "super secret key"
 
@@ -45,8 +48,7 @@ def registration_page():
 
 @app.route('/register', methods=['POST'])
 def user_register():
-    with Connection_db() as cur:
-        data = cur.execute("select * from user").fetchall()
+    database.get_db()
     if request.method == 'POST':
         first_name = request.form['first_name']
         last_name = request.form['last_name']
@@ -54,20 +56,22 @@ def user_register():
         password = request.form['password']
         email = request.form['email']
         phone_number = request.form['phone_number']
-        with Connection_db() as cur:
-            if cur.execute(
-                    'SELECT 1 FROM user WHERE phone_number = ?',
-                    (phone_number, )).fetchone():
-                return "Phone number already exists", 409
-            elif cur.execute('SELECT 1 FROM user WHERE login = ?',
-                             (login, )).fetchone():
-                return "Login already registered", 409
+        get_phone_number=select(User).where(User.phone_number == phone_number)
+        result_get_phone_number = database.db_session.execute(get_phone_number).scalar()
+
+        get_login=select(User).where(User.login == login)
+        result_get_login = database.db_session.execute(get_login).scalar()
+
+        if result_get_phone_number:
+            return "Phone number already exists", 409
+
+        elif result_get_login:
+            return "Login already registered", 409
         birth_date = request.form['birth_date']
         additional_info = request.form['additional_info']
-        with Connection_db() as cur:
-            cur.execute('INSERT INTO user (first_name, last_name, login, password, email, phone_number, birth_date, additional_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                            (first_name, last_name, login, password, email, phone_number, birth_date, additional_info))
-    return render_template('message.html', details="User registration successful", type="success")
+        new_user = insert(User).values(first_name=first_name, last_name=last_name, login=login, password=password, email=email, phone_number=phone_number, birth_date=birth_date, additional_info=additional_info)
+
+    return render_template('message.html', details="User registration successful", type="success", user={new_user})
 
 @app.route('/login', methods=['GET'])
 def login_page():
@@ -75,19 +79,19 @@ def login_page():
 
 @app.route('/login', methods=['POST'])
 def user_login_post():
+    database.get_db()
     login = request.form['login']
     password = request.form['password']
 
-    with Connection_db() as cur:
-        cur.execute("select * from user where login=? and password=?", (login, password,))
-        result = cur.fetchone()
+    user = select(User).where(User.login == login, User.password == password)
+    result_user = database.db_session.execute(user).scalar()
 
-    if result is None:
+    if result_user is None:
         flash('Невірний логін або пароль. Спробуйте ще раз.', 'error')
         return redirect(url_for('login_page'))
 
-    session['user_id'] = result['id']
-    return f"Login success as {result}!"
+    session['user_id'] = result_user.id
+    return f"Login success as {result_user}!"
 
 @app.route('/logout', methods=['GET'])
 def user_logout():
