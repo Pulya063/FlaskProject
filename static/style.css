@@ -61,3 +61,142 @@ body {
     font-size: 14px;
     color: #666;
 }
+
+.site-header {
+    background-color: #2c3e50; /* Темно-синій фон */
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between; /* Лого зліва, пошук справа */
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Логотип */
+.logo a {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+/* Форма пошуку */
+.search-form {
+    display: flex;
+    gap: 10px; /* Відстань між елементами */
+}
+
+/* Стилізація полів вводу та селекта */
+.search-form input,
+.search-form select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+}
+
+.search-form input:focus,
+.search-form select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+/* Поле року робимо вужчим */
+input[name="year"] {
+    width: 80px;
+}
+
+/* Кнопка */
+.search-form button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.search-form button:hover {
+    background-color: #c0392b;
+}
+
+/* Адаптивність для мобільних */
+@media (max-width: 768px) {
+    .site-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .search-form {
+        flex-direction: column;
+        width: 100%;
+    }
+    .search-form input, .search-form select, .search-form button {
+        width: 100%;
+    }
+}
+
+.message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+
+    display: flex;
+    align-items: center;
+
+    background: #E8F5E9;
+    color: #2E7D32;
+
+    border: 1px solid #A5D6A7;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* ✅ успіх */
+.message--success {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border-color: #A5D6A7;
+}
+
+/* ❌ помилка */
+.message--error {
+    padding: 10px;
+    background: #FDECEA;
+    color: #C62828;
+    border-color: #F5C6CB;
+}
+
+
+.container {
+    background: #ffffff;
+    padding: 36px 32px;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 420px;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,0.12),
+        0 4px 10px rgba(0,0,0,0.06);
+}
+
+/* ===== Title ===== */
+.container h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 600;
+    font-size: 22px;
+    color: #222;
+}
+
+.content-massage {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+}

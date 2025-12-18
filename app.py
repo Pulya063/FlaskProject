@@ -1,7 +1,7 @@
 import functools
 from flask import Flask, request, session, render_template, redirect, url_for, flash
 import sqlite3
-
+# from sqlalchemy import select, insert, update, delete
 app = Flask(__name__)
 app.secret_key = "super secret key"
 
@@ -27,7 +27,7 @@ class Connection_db:
 def login_check(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        if session.get('logged_in'):
+        if session.get('user_id'):
             return func(*args, **kwargs)
         else:
             return redirect(url_for('login_page'))
@@ -84,17 +84,14 @@ def user_login_post():
 
     if result is None:
         flash('Невірний логін або пароль. Спробуйте ще раз.', 'error')
-
         return redirect(url_for('login_page'))
 
     session['user_id'] = result['id']
-    session['logged_in'] = True
     return f"Login success as {result}!"
 
 @app.route('/logout', methods=['GET'])
 def user_logout():
-    if session['logged_in']:
-        session['logged_in'] = False
+    if session['user_id']:
         session.clear()
         return render_template('message.html', details="Logout successful", type="success")
     return render_template('message.html', details="You haven`t been logged in", type="error")
@@ -155,27 +152,50 @@ def user_delete(user_id):
 @app.route('/films', methods=['GET'])
 def films():
     filter_params = request.args
-    filter_list_text = []
+    query_parts = []
+    params = []
+    join = ""
+
     with Connection_db() as cur:
         countries = cur.execute(f'select * from country').fetchall()
+        genres = cur.execute(f'select * from genre').fetchall()
 
     for key, value in filter_params.items():
         if value:
             if key == 'name':
-                filter_list_text.append(f"name like '%{value}%'")
+                query_parts.append("name LIKE ?")
+                params.append(f"%{value.strip()}%")
+            elif key == 'genre':
+                query_parts.append("g.genre LIKE ?")
+                join = "f inner join genre_film gn on f.id = gn.film_id inner join genre g on gn.genre_id = g.genre"
+                params.append(f"%{value.strip()}%")
+            elif key == 'first_name':
+                query_parts.append("a.first_name LIKE ?")
+                join = "f inner join actor_film af on f.id == af.film_id inner join actor a on af.actor_id == a.id"
+                params.append(f"%{value.strip()}%")
+            elif key == 'last_name':
+                query_parts.append("a.last_name LIKE ?")
+                join = "f inner join actor_film af on f.id == af.film_id inner join actor a on af.actor_id == a.id"
+                params.append(f"%{value.strip()}%")
             else:
-                filter_list_text.append(f"{key}={value}")
+                query_parts.append(f"{key} = ?")
+                params.append(value.strip())
 
-    if filter_params:
-        search_query = ""
-        search_query = " and ".join(filter_list_text)
-        with Connection_db() as cur:
-            result = cur.execute(f'select * from film where {search_query} order by id desc').fetchall()
-        if result is None:
-            return render_template('message.html', details="Film not found", type="error")
+    base_sql = "select * from film"
+
+    if query_parts:
+        full_sql = f"{base_sql} {join} where {' and '.join(query_parts)} order by id desc"
+    else:
+        full_sql = f"{base_sql} order by id desc"
+
     with Connection_db() as cur:
-        result = cur.execute('select * from film').fetchall()
-    return render_template('film.html', films=result, countries=countries)
+        result = cur.execute(full_sql, params).fetchall()
+
+    if not result:
+        flash("Film not found", "error")
+        return redirect(url_for('films'))
+
+    return render_template('film.html', films=result, countries=countries, genres=genres)
 
 
 

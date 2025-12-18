@@ -6,20 +6,56 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<form action="/films" method="get">
-    <label name="name">Name: </label>
-    <input type="text" name="name">
-    <label name="tear">Year: </label>
-    <input type="number" name="year">
-    <select name="countries">
-        <option></option>
-        {% for one_country in countries %}
-            <option value="{{ one_country }}">{{ one_country["country_name"] }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit" name="search">Search</button>
-</form>
+<header class="site-header">
+    <div class="logo">
+        <a href="/">🎬 MyMovies</a>
+    </div>
 
+    <form action="/films" method="get" class="search-form">
+        <div class="input-group">
+            <input type="text" name="name" placeholder="Назва фільму...">
+        </div>
+
+        <div class="input-group">
+            <input type="number" name="year" placeholder="Рік" min="1900" max="2099">
+        </div>
+
+        <div class="input-group">
+            <select name="country">
+                <option value="" disabled selected>Оберіть країну</option>
+                {% for one_country in countries %}
+                    <option value="{{ one_country['country_name'] }}">{{ one_country["country_name"] }}</option>
+                {% endfor %}
+            </select>
+            <select name="genre">
+                <option value="" disabled selected>Оберіть Жанр</option>
+                {% for genre in genres %}
+                    <option value="{{ genre['genre'] }}">{{ genre["genre"] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="input-group">
+            <input type="text" name="first_name" placeholder="Імя Актора">
+            <input type="text" name="last_name" placeholder="Прізвище Актора">
+        </div>
+
+        <button type="submit" name="search">🔍 Пошук</button>
+    </form>
+</header>
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flashes">
+        <section class="content-massage">
+                {% for category, message in messages %}
+                    <div class="message--{{ category }}">{{ message }}</div>
+                {% endfor %}
+        </section>
+    </ul>
+  {% endif %}
+{% endwith %}
 
 {% if films %}
     <section class="content">
