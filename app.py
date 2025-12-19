@@ -38,9 +38,11 @@ def login_check(func):
 @app.route('/', methods=['GET'])
 @login_check
 def main_page():
-    with Connection_db() as cur:
-        res = cur.execute(f'SELECT * FROM film ORDER BY id DESC LIMIT 10').fetchall()
-    return render_template('main_page.html', films=res)
+    database.get_db()
+    films = select(Film).order_by(Film.id.limit(10).desc)
+    result_films = database.db_session.execute(films).scalars()
+
+    return render_template('main_page.html', films=result_films)
 
 @app.route('/register', methods=['GET'])
 def registration_page():
@@ -102,13 +104,15 @@ def user_logout():
 
 @app.route('/users', methods=['GET'])
 def users():
-    with Connection_db() as cur:
-        res = cur.execute(f'SELECT * FROM user').fetchall()
+    database.get_db()
+    users = select(User)
+    result_user = database.db_session.execute(users).scalars()
     return ""
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 @login_check
 def user_profile(user_id):
+    database.get_db()
     if request.method == 'POST':
         first_name = request.form['fname']
         last_name = request.form['lname']
@@ -121,26 +125,20 @@ def user_profile(user_id):
         additional_info = request.form['info']
 
         action = request.form.get('action')
+        if action == "save":
+            update_user = update(User).where(id = user_id).values(first_name=first_name, last_name=last_name, login=login, password=password, email=email, phone=phone, birth_date=birth_date, additional_info=additional_info)
+            res_upd_user = database.db_session.execute(update_user).scalar()
+            if res_upd_user is None:
+                return render_template('message.html', details="User haven`t been updated", type="error")
+            return render_template('message.html', details="User updated successfully", type="success")
 
-        with Connection_db() as cur:
-            if action == "save":
-                cur.execute("UPDATE user SET first_name=?, last_name=?, login=?, password=?, email=?, phone_number=?, birth_date=?, photo=?, additional_info=? WHERE id=?",
-                            (first_name, last_name, login, password, email, phone, birth_date, photo, additional_info, user_id))
-                return render_template('message.html', details="User updated successfully", type="success")
-
-            else:
-                cur.execute("DELETE FROM user WHERE id=?", (user_id,))
-                session.clear()
-                return render_template('message.html',
-                                       details="Account deleted",
-                                       type="success")
+        elif action == "delete":
+            cur.execute("DELETE FROM user WHERE id=?", (user_id,))
+            session.clear()
+            return render_template('message.html',
+                                   details="Account deleted",
+                                   type="success")
     else:
-        session_user_id = session.get('user_id')
-        if session_user_id is None:
-            return render_template('message.html', details="You haven`t been logged in", type="error")
-
-        if session_user_id != user_id:
-            return render_template('message.html', details="you are not logged in", type="error")
 
         with Connection_db() as cur:
             user_info = cur.execute(f'SELECT * FROM user WHERE id = ?', (user_id,)).fetchone()
