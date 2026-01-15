@@ -6,11 +6,15 @@ import time
 import os
 from random import randint
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(threadName)s] %(levelname)s: %(message)s"
+)
 
 def timer_monitor(start_time, stop, count_of_process):
     while not stop.is_set():
         elapsed = time.time() - start_time
-        print(f"--- [Timer Thread]: Минуло {elapsed:.1f} сек, оброблено {count_of_process[0]} ---")
+        logging.info(f"--- [Timer Thread]: Минуло {elapsed:.1f} сек, оброблено {count_of_process[0]} ---")
         time.sleep(1)
 
 
@@ -53,7 +57,7 @@ def transaction_logger(input_queue, stop_event, count_of_process, shared_stats):
                     break
                 continue
 
-    print(f"Логер: Роботу завершено. Всього записано: {shared_stats[0]}")
+    logging.info(f"Логер: Роботу завершено. Всього записано: {shared_stats[0]}")
 
 if __name__ == '__main__':
     q1 = Queue()
@@ -94,8 +98,8 @@ if __name__ == '__main__':
     log_thread.join()
     monitor_thread.join()
 
-    print(f"\n--- ФІНАЛ ---")
-    print(f"Час виконання: {time.time() - start_time:.2f} сек")
-    print(f"Результати збережено в bank_log.txt")
+    logging.info(f"\n--- ФІНАЛ ---")
+    logging.info(f"Час виконання: {time.time() - start_time:.2f} сек")
+    logging.info(f"Результати збережено в bank_log.txt")
 
 
