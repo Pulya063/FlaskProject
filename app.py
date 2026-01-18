@@ -132,18 +132,14 @@ def user_profile(user_id):
             return render_template('message.html', details="User updated successfully", type="success")
 
         elif action == "delete":
-            deleted_user = delete(User).where(User.id == user_id)
-            database.db_session.execute(deleted_user)
-            database.db_session.commit()
-            session.clear()
-            return render_template('message.html', details="Account deleted", type="success")
-    else:
+            return redirect(url_for("/users/<int:user_id>/delete"))
+        else:
         user_info_stmt = select(User).where(User.id == user_id)
         res_user_info = database.db_session.execute(user_info_stmt).scalar()
         return render_template('user_profile.html', user=res_user_info)
 
 
-@app.route('/users/<int:user_id>', methods=['DELETE'])
+@app.route('/users/<int:user_id>/delete', methods=['GET'])
 @login_check
 def user_delete(user_id):
     database.get_db()
