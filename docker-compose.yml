@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # --- СЕРВІС 1: БРОКЕР ---
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: my-rabbit
+    ports:
+      - "5672:5672"
+
+  # --- СЕРВІС 2: ВОРКЕР (КУХАР) ---
+  worker:
+    build: .
+    command: celery -A celery_app worker --loglevel=info
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    volumes:
+      - .:/app
