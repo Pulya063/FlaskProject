@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(processName)s/%(t
 def lucky_tickets(start_stop):
     start, stop = start_stop
     tickets = []
-    for i in range(start, stop):
+    for i in range(start, stop+1):
         ticket = [int(d) for d in f"{i:06d}"]
         if sum(ticket[:3]) == sum(ticket[3:]):
             tickets.append(ticket)
