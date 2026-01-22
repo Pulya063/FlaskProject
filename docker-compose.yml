@@ -1,7 +1,65 @@
 version: '3.8'
+
 services:
+  web:
+    build: .
+    container_name: flask_web
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - RABBITMQ_HOST=rabbitmq
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - rabbitmq
+      - worker
+      - beat
+
+  worker:
+    build: .
+    container_name: flask_worker
+    command: celery -A mail_sender worker --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - RABBITMQ_HOST=rabbitmq
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - rabbitmq
+
+  beat:
+    build: .
+    container_name: flask_beat
+    command: celery -A mail_sender beat --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - RABBITMQ_HOST=rabbitmq
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: flask_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
   db:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: flask_db
     environment:
       - POSTGRES_USER=admin
@@ -14,3 +72,4 @@ services:
 
 volumes:
   pgdata:
+  rabbitmq_data:
