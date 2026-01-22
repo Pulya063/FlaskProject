@@ -1,4 +1,4 @@
-"""Updated Database
+"""Updated database
 
 Revision ID: a60bbb6d52ca
 Revises: 

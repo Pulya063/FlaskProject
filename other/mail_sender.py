@@ -10,10 +10,8 @@ from config import get_users_emails, get_new_films
 rabbit_host = os.environ.get('RABBITMQ_HOST', 'localhost')
 app = Celery('mail_sender', broker=f'pyamqp://guest:guest@{rabbit_host}//')
 
-# Явно вказуємо, де шукати задачі, щоб Beat їх точно побачив
 app.conf.imports = ('mail_sender',)
 
-# Налаштування розкладу
 app.conf.beat_schedule = {
     'send-news-every-minute': {
         'task': 'mail_sender.start_newsletter_process',
@@ -80,12 +78,8 @@ def send_personal_film_news(email, name):
     msg['Subject'] = f"Новини кіно для {name}!"
 
     body = f"""Привіт, {name}!
-
-    Це твоя персональна розсилка новин.
     
-    З повагою, FlaskProject.
-    
-    {",",join(film.name for film in films)}
+    Новинки на сьогодні: {",".join(film.name for film in films)}
     """
     msg.attach(MIMEText(body, 'plain'))
 

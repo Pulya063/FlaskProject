@@ -3,9 +3,9 @@ from flask import Flask, request, session, render_template, redirect, url_for, f
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
-from models import *
-import database
-from mail_sender import send_registration_email
+from database.models import *
+from database import database
+from other.mail_sender import send_registration_email
 
 app = Flask(__name__)
 app.secret_key = "super secret key"

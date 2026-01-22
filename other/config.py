@@ -1,5 +1,5 @@
-import database
-from models import User, Film
+from database import database
+from database.models import User, Film
 from sqlalchemy import select
 from datetime import datetime, timedelta
 
