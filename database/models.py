@@ -1,6 +1,6 @@
 from sqlalchemy import String, Integer, ForeignKey, Date, Column, DateTime
 from sqlalchemy.orm import relationship
-from database import Base
+from database.database import Base
 
 
 class Country(Base):

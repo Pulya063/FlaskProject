@@ -18,11 +18,10 @@ def login_check(func):
             return func(*args, **kwargs)
         else:
             return redirect(url_for('login_page'))
-
     return wrapper
 
 
-@app.route('/', methods=['GET'])
+@app.route('', methods=['GET'])
 @login_check
 def main_page():
     try:
@@ -78,8 +77,8 @@ def user_register():
             database.db_session.commit()
 
             send_registration_email.delay(email, first_name)
-
-            return render_template('message.html', details="Користувач успішно зареєстрований", type="success")
+            flash('Реєстрація успішна!', 'success')
+            return redirect(url_for('login_page'))
         except IntegrityError:
             database.db_session.rollback()
             return render_template('message.html', details="Помилка реєстрації. Можливо, логін або телефон вже існує.", type="error")

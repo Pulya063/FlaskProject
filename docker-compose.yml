@@ -22,7 +22,7 @@ services:
   worker:
     build: .
     container_name: flask_worker
-    command: celery -A mail_sender worker --loglevel=info
+    command: celery -A other.mail_sender worker --loglevel=info
     env_file:
       - .env
     environment:
@@ -37,7 +37,7 @@ services:
   beat:
     build: .
     container_name: flask_beat
-    command: celery -A mail_sender beat --loglevel=info
+    command: celery -A other.mail_sender beat --loglevel=info
     env_file:
       - .env
     environment:

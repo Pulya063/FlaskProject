@@ -5,12 +5,12 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from config import get_users_emails, get_new_films
+from other.config import get_users_emails, get_new_films
 
 rabbit_host = os.environ.get('RABBITMQ_HOST', 'localhost')
-app = Celery('mail_sender', broker=f'pyamqp://guest:guest@{rabbit_host}//')
+app = Celery('other.mail_sender', broker=f'pyamqp://guest:guest@{rabbit_host}//')
 
-app.conf.imports = ('mail_sender',)
+app.conf.imports = ('other.mail_sender',)
 
 app.conf.beat_schedule = {
     'send-news-every-minute': {
