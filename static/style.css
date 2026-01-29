@@ -1,63 +1,547 @@
-/* ===== Reset (мінімальний) ===== */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+@import url("base.css");
 
-/* ===== Base ===== */
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
-}
-
-/* ===== Content wrapper ===== */
-.content {
-    max-width: 1000px;
-    margin: 40px auto;
-    padding: 0 15px;
-
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+/* ===== 1. Search Form ===== */
+.search-form {
+    display: flex;
+    flex-direction: column;
     gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
 }
 
-/* ===== Card ===== */
+/* Main Search Row */
+.search-main-row {
+    display: flex;
+    gap: 15px;
+    background: var(--bg-card);
+    padding: 10px;
+    border-radius: 50px;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.main-input {
+    flex-grow: 1;
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    color: var(--text-main);
+}
+
+.main-input:focus {
+    outline: none;
+}
+
+.search-form button[name="search"] {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 0 35px;
+    border-radius: 40px;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.search-form button[name="search"]:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-2px);
+}
+
+/* ===== 2. Filters Dropdown ===== */
+.filters-dropdown {
+    background: var(--bg-card);
+    border-radius: var(--radius-card);
+    border: 1px solid #334155;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.filters-dropdown summary {
+    padding: 15px 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    outline: none;
+    user-select: none;
+    background: transparent;
+    transition: color 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.filters-dropdown summary:hover {
+    color: var(--color-primary);
+}
+
+.filter-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    padding: 30px;
+    border-top: 1px solid #334155;
+    background: var(--bg-card);
+}
+
+.metadata-column, .actor-column {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.actor-column label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #475569;
+    font-size: 14px;
+    width: 100%;
+    transition: border-color 0.2s;
+    background-color: var(--bg-input);
+    color: var(--text-main);
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* ===== 3. Content Grid (Films) ===== */
+.content {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 40px;
+    width: 100%;
+}
+
 .card {
-    background: #fff;
-    padding: 16px;
-    border-radius: 10px;
-
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: var(--bg-card);
+    border-radius: var(--radius-card);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #334155;
 }
 
-/* Hover effect */
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    border-color: var(--color-primary);
 }
 
-/* ===== Card title ===== */
+.card-info {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
 .card-title {
-    font-size: 18px;
-    margin-bottom: 12px;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    line-height: 1.3;
+    font-weight: 700;
 }
 
 .card-title a {
     text-decoration: none;
-    color: #2c3e50;
+    color: var(--text-main);
 }
 
 .card-title a:hover {
-    color: #27ae60;
+    color: var(--color-primary);
 }
 
-/* ===== Card metadata ===== */
 .card-meta {
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #334155;
+    font-weight: 400;
+}
+
+.card-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.05);
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+/* ===== 4. Film Details Page ===== */
+.film-details-container {
+    max-width: 1100px;
+    margin: 60px auto;
+    padding: 50px;
+    background: var(--bg-card);
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    border: 1px solid #334155;
+}
+
+.film-header {
+    margin-bottom: 40px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 30px;
+}
+
+.film-title {
+    font-size: 3rem;
+    color: var(--text-main);
+    margin-bottom: 10px;
+    font-weight: 800;
+    line-height: 1.1;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.film-content-wrapper {
+    display: flex;
+    gap: 60px;
+}
+
+.film-poster {
+    flex-shrink: 0;
+    width: 340px;
+}
+
+.film-poster img {
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    object-fit: cover;
+    border: 1px solid #334155;
+}
+
+.film-info-side {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.film-meta-large {
+    display: flex;
+    gap: 15px;
+    font-size: 1rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    margin-bottom: 35px;
+}
+
+.film-meta-large span {
+    background: rgba(59, 130, 246, 0.1);
+    padding: 8px 16px;
+    border-radius: 30px;
+    color: #60a5fa;
+    font-weight: 600;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.film-description {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: #cbd5e1; /* Світліший сірий */
+    margin-bottom: 40px;
+    font-weight: 300;
+}
+
+.film-description h3, .film-actors h3 {
+    font-size: 1.5rem;
+    color: var(--text-main);
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.film-actors {
+    margin-top: 40px;
+    padding: 30px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 16px;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+}
+
+/* ===== 5. Reviews Section ===== */
+.reviews-section {
+    margin-top: 80px;
+    padding-top: 50px;
+    border-top: 1px solid #334155;
+}
+
+.reviews-title {
+    font-size: 2rem;
+    color: var(--text-main);
+    margin-bottom: 40px;
+    font-weight: 700;
+}
+
+/* Review Form */
+.review-form {
+    background: rgba(255,255,255,0.03);
+    padding: 35px;
+    border-radius: 20px;
+    margin-bottom: 50px;
+    border: 1px solid #334155;
+}
+
+.review-form h4 {
+    margin-bottom: 25px;
+    font-size: 1.3rem;
+    color: var(--text-main);
+}
+
+.review-form textarea {
+    width: 100%;
+    padding: 20px;
+    border: 1px solid #475569;
+    border-radius: 12px;
+    min-height: 140px;
+    margin-bottom: 25px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s;
+    resize: vertical;
+    background-color: var(--bg-input);
+    color: var(--text-main);
+}
+
+.review-form textarea:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.review-form .form-actions {
+    display: flex;
     justify-content: space-between;
-    font-size: 14px;
-    color: #666;
+    align-items: center;
+}
+
+.rating-input {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.rating-input input {
+    width: 70px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #475569;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background-color: var(--bg-input);
+    color: var(--text-main);
+}
+
+/* Reviews List */
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.review-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 30px;
+    border: 1px solid #334155;
+    display: flex;
+    gap: 25px;
+    transition: transform 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.review-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    border-color: #475569;
+}
+
+.review-avatar {
+    flex-shrink: 0;
+    width: 55px;
+    height: 55px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 700;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+.review-content {
+    flex-grow: 1;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.review-author {
+    font-weight: 700;
+    color: var(--text-main);
+    font-size: 1.1rem;
+}
+
+.review-rating {
+    color: #fbbf24; /* Amber */
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+}
+
+.review-text {
+    color: #cbd5e1;
+    line-height: 1.7;
+    font-size: 1.05rem;
+    font-weight: 300;
+    overflow-wrap: break-word;
+}
+
+.review-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.review-actions .btn {
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    border-radius: 20px;
+    text-transform: none;
+    font-weight: 600;
+}
+
+/* ===== 6. User Profile Layout ===== */
+.profile-wrapper {
+    display: flex;
+    gap: 50px;
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 30px;
+    align-items: flex-start;
+}
+
+.profile-form-section, .profile-lists-section {
+    flex: 1;
+    background: var(--bg-card);
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border: 1px solid #334155;
+}
+
+.profile-form-section h2 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+    color: var(--text-main);
+}
+
+.lists-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 20px;
+}
+
+.lists-header h3 {
+    font-size: 1.6rem;
+    color: var(--text-main);
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    margin-bottom: 15px;
+    transition: all 0.3s;
+    border: 1px solid #334155;
+}
+
+.list-item:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: var(--color-primary);
+    transform: translateX(5px);
+}
+
+.list-name {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 1.15rem;
+}
+
+.list-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ===== 7. Responsive ===== */
+@media (max-width: 768px) {
+    .filter-group {
+        grid-template-columns: 1fr;
+    }
+
+    .search-main-row {
+        flex-direction: column;
+    }
+
+    .film-content-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .film-poster {
+        width: 100%;
+        max-width: 350px;
+        margin-bottom: 30px;
+    }
+
+    .review-card {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .profile-wrapper {
+        flex-direction: column;
+    }
+
+    .film-details-container {
+        padding: 30px;
+    }
 }

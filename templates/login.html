@@ -1,32 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
-</head>
-<body>
-  <section class="content">
-        <div class="container">
-            <h2>Login</h2>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-              {% if messages %}
-                <ul class="flashes">
-                    <section class="content">
-                            {% for category, message in messages %}
-                                <div class="message--{{ category }}">{{ message }}</div>
-                            {% endfor %}
-                    </section>
-                </ul>
-              {% endif %}
-            {% endwith %}
-            <form action="/login" method="post">
-                <input type="text" name="login" placeholder="Логін" required>
-                <input type="password" name="password" placeholder="Пароль" required>
+{% extends "base.html" %}
 
-                <button type="submit">Login</button>
-            </form>
-        </div>
-    </section>
-</body>
-</html>
+{% block title %}Вхід - MyMovies{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
+{% endblock %}
+
+{% block search_form %}
+    <!-- Приховуємо форму пошуку на сторінці входу -->
+{% endblock %}
+
+{% block content %}
+<section class="content">
+    <div class="container">
+        <h2>Вхід</h2>
+        <form action="/login" method="post">
+            <input type="text" name="login" placeholder="Логін" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+
+            <button type="submit" class="btn btn-success">Увійти</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

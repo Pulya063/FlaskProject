@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ list.name }} - MyMovies{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="content">
+    <div class="container container--wide" style="max-width: 1000px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2>Список: {{ list.name }}</h2>
+            <a href="{{ url_for('user_profile', user_id=list.user_id) }}" class="btn btn-primary">Назад до профілю</a>
+        </div>
+
+        {% if films %}
+            <div class="content" style="padding: 0; margin: 0;">
+                {% for film in films %}
+                <div class="card">
+                    <div class="card-info">
+                        <h3 class="card-title">
+                            <a href="{{ url_for('film_info', film_id=film.id) }}">{{ film.name }}</a>
+                        </h3>
+
+                        <div class="card-meta">
+                            <span>📅 {{ film.date.year }}</span>
+                            <span>⭐ {{ film.rating }}/10</span>
+                            <span>🎭 {{ film.genre }}</span>
+                        </div>
+
+                        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+                             <!-- Кнопка видалення зі списку -->
+                            <form method="POST" action="{{ url_for('user_list_item_delete', user_id=list.user_id, list_id=list.id, film_id=film.id) }}">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">Видалити зі списку</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="text-align: center; color: #777; font-size: 1.2rem;">Цей список поки що порожній.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

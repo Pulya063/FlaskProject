@@ -1,0 +1,281 @@
+/* ===== 1. Reset & Base Styles ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    /* Темний фон */
+    --bg-body: #0f172a; /* Дуже темний синій (майже чорний) */
+    --bg-card: #1e293b; /* Темно-синій для карток */
+    --bg-input: #334155; /* Світліший для інпутів */
+
+    /* Текст */
+    --text-main: #f8fafc; /* Майже білий */
+    --text-muted: #94a3b8; /* Світло-сірий */
+    --text-dark: #0f172a; /* Для світлих елементів */
+
+    /* Акценти (Яскраві) */
+    --color-primary: #3b82f6; /* Яскравий синій */
+    --color-primary-hover: #2563eb;
+
+    --color-success: #10b981; /* Яскравий смарагдовий */
+    --color-success-hover: #059669;
+
+    --color-danger: #ef4444; /* Яскравий червоний */
+    --color-danger-hover: #dc2626;
+
+    --color-warning: #f59e0b; /* Бурштиновий */
+
+    /* Інше */
+    --radius-card: 16px;
+    --radius-btn: 8px;
+    --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-main);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--color-primary);
+}
+
+/* ===== 2. Buttons (Global) ===== */
+.btn, button, .user-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    text-transform: none; /* Прибираємо uppercase для сучасності */
+}
+
+/* Primary Button */
+.btn-primary, .user-btn {
+    background-color: var(--color-primary);
+    color: white;
+}
+.btn-primary:hover, .user-btn:hover {
+    background-color: var(--color-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); /* Світіння */
+}
+
+/* Success Button */
+.btn-success {
+    background-color: var(--color-success);
+    color: white;
+}
+.btn-success:hover {
+    background-color: var(--color-success-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+}
+
+/* Danger Button */
+.btn-danger {
+    background-color: var(--color-danger);
+    color: white;
+}
+.btn-danger:hover {
+    background-color: var(--color-danger-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+}
+
+/* Active State */
+.btn:active, button:active, .user-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* ===== 3. Header (Global) ===== */
+.site-header {
+    background-color: #1e293b; /* Трохи світліший за фон body */
+    padding: 1rem 2rem;
+    color: var(--text-main);
+    border-bottom: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px); /* Ефект матового скла */
+    background-color: rgba(30, 41, 59, 0.9);
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo a {
+    color: var(--text-main);
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo a:hover {
+    color: var(--color-primary);
+}
+
+/* Auth Buttons Container */
+.auth-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+/* ===== 4. Flash Messages ===== */
+.flash-container {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 90%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.flash-message {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    font-weight: 500;
+    font-size: 15px;
+    position: relative;
+    animation: slideDown 0.4s ease-out forwards;
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid #334155;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.flash-icon {
+    margin-right: 15px;
+    font-size: 20px;
+}
+
+.flash-text {
+    flex-grow: 1;
+}
+
+.flash-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    margin-left: 15px;
+    opacity: 0.6;
+    transition: 0.2s;
+    color: var(--text-muted);
+}
+
+.flash-close:hover {
+    opacity: 1;
+    color: var(--text-main);
+}
+
+/* Colors */
+.flash-success {
+    border-left: 4px solid var(--color-success);
+}
+.flash-success .flash-icon { color: var(--color-success); }
+
+.flash-error {
+    border-left: 4px solid var(--color-danger);
+}
+.flash-error .flash-icon { color: var(--color-danger); }
+
+.flash-info {
+    border-left: 4px solid var(--color-primary);
+}
+.flash-info .flash-icon { color: var(--color-primary); }
+
+/* ===== 5. Static Messages ===== */
+.message {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.message--success {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.message--error {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.message--info {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-top {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .site-header {
+        padding: 1rem;
+    }
+}

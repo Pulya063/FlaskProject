@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Додати новий фільм - MyMovies{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
+{% endblock %}
+
+{% block search_form %}
+    <!-- Приховуємо пошук -->
+{% endblock %}
+
+{% block content %}
+<section class="content">
+    <div class="container container--wide">
+        <h2>Додати новий фільм</h2>
+
+        <form method="POST" action="{{ url_for('films') }}">
+
+            <div class="form-row">
+                <div>
+                    <label>Назва:</label>
+                    <input type="text" name="name" placeholder="Назва фільму" required>
+                </div>
+                <div>
+                    <label>Рік виходу:</label>
+                    <input type="date" name="date" required>
+                </div>
+            </div>
+
+            <label>Постер (URL):</label>
+            <input type="text" name="poster" placeholder="https://example.com/poster.jpg">
+
+            <div class="form-row">
+                <div>
+                    <label>Країна:</label>
+                    <select name="country" required>
+                        <option value="" disabled selected>Оберіть країну</option>
+                        {% if countries %}
+                            {% for one_country in countries %}
+                                <option value="{{ one_country.country_name }}">{{ one_country.country_name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div>
+                    <label>Жанр:</label>
+                    <select name="genre">
+                        <option value="" disabled selected>Оберіть жанр</option>
+                        {% if genres %}
+                            {% for genre in genres %}
+                                <option value="{{ genre.genre }}">{{ genre.genre }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+
+            <label>Актори (через кому):</label>
+            <input type="text" name="actors" placeholder="">
+
+            <div class="form-row">
+                <div>
+                    <label>Рейтинг (1-10):</label>
+                    <input type="number" name="rating" min="1" max="10" placeholder="" required>
+                </div>
+                <div>
+                    <label>Тривалість (хв):</label>
+                    <input type="number" name="duration" placeholder="" required>
+                </div>
+            </div>
+
+            <label>Опис:</label>
+            <textarea name="description" placeholder="Короткий опис сюжету..." required></textarea>
+
+            <div class="form-row" style="margin-top: 10px;">
+                <button type="submit" class="btn btn-success">Створити фільм</button>
+                <a href="{{ url_for('main_page') }}" class="btn btn-danger" style="text-align: center; margin-top: 20px; display: flex; align-items: center; justify-content: center;">Скасувати</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

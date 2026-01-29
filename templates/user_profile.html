@@ -1,39 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>User Page</title>
+{% extends "base.html" %}
+
+{% block title %}Профіль - MyMovies{% endblock %}
+
+{% block extra_styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
-</head>
-<body>
-<section class="content">
-    <div class="container">
-        <h2>Hello {{ user["login"] }}</h2>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
 
-        <form method="POST" action="/users/{{ user["id"] }}">
-            <label for="fname">First_name: </label>
-            <input type="text" name="fname" value={{ user["first_name"] }} required>
-            <label for="lname">Last_name: </label>
-            <input type="text" name="lname" value={{ user["last_name"] }} required>
-            <label for="login">Login: </label>
-            <input type="text" name="login" required>
-            <label for="password">Password: </label>
-            <input type="password" name="password" required>
-            <label for="email">Email: </label>
-            <input type="email" name="email" value={{ user["email"] }} required>
-            <label for="phone">Phone number: </label>
-            <input type="tel" name="phone" value={{ user["phone_number"] }}>
-            <label for="birth_date">Birth date: </label>
-            <input type="date" name="birth_date" value={{ user["birth_date"] }}>
-            <label for="photo">Photo: </label>
-            <input type="file" name="photo" value="additional_info">
-            <label for="info">Additional Info: </label>
-            <textarea name="info"></textarea>
+{% block search_form %}
+    <!-- Приховуємо пошук -->
+{% endblock %}
 
-            <button type="submit" name="action" value="save">Редагувати</button>
-            <button type="submit" name="action" value="delete">Видалити</button>
+{% block content %}
+<div class="profile-wrapper">
+    <!-- Ліва колонка: Редагування профілю -->
+    <section class="profile-form-section">
+        <h2>Привіт, {{ user.login }}!</h2>
+
+        <form method="POST" action="{{ url_for('user_profile', user_id = user.id)}}">
+            <label for="first_name">Ім'я:</label>
+            <input type="text" name="first_name" value="{{ user['first_name'] }}" required>
+
+            <label for="last_name">Прізвище:</label>
+            <input type="text" name="last_name" value="{{ user['last_name'] }}" required>
+
+            <label for="login">Логін:</label>
+            <input type="text" name="login" value="{{ user['login'] }}" required>
+
+            <label for="password">Пароль:</label>
+            <input type="password" name="password" placeholder="Новий пароль (залиште пустим, щоб не змінювати)">
+
+            <label for="email">Email:</label>
+            <input type="email" name="email" value="{{ user['email'] }}" required>
+
+            <label for="phone_number">Телефон:</label>
+            <input type="tel" name="phone_number" value="{{ user['phone_number'] }}">
+
+            <label for="birth_date">Дата народження:</label>
+            <input type="date" name="birth_date" value="{{ user['birth_date'] }}">
+
+            <label for="additional_info">Про себе:</label>
+            <textarea name="additional_info">{{ user['additional_info'] }}</textarea>
+
+            <button type="submit" name="action" value="save" class="btn btn-primary" style="margin-top: 20px;">Зберегти зміни</button>
+
+            <form method="POST" action="{{ url_for('user_delete', user_id=user.id) }}" style="margin-top: 10px;">
+                 <button type="submit" class="btn btn-danger">Видалити акаунт</button>
+            </form>
         </form>
-    </div>
-</section>
-</body>
-</html>
+    </section>
+
+    <!-- Права колонка: Списки фільмів -->
+    <section class="profile-lists-section">
+        <div class="lists-header">
+            <h3>Мої списки</h3>
+            <!-- Форма створення нового списку -->
+            <form method="POST" action="{{ url_for('create_list', user_id=user.id) }}" style="display: flex; gap: 10px; width: auto;">
+                <input type="text" name="list_name" placeholder="Назва списку" required style="padding: 8px; width: 150px;">
+                <button type="submit" class="btn btn-success" style="margin: 0; padding: 8px 15px;">+</button>
+            </form>
+        </div>
+
+        <div class="lists-container">
+            {% if user_lists %}
+                {% for list in user_lists %}
+                <div class="list-item">
+                    <span class="list-name">{{ list.name }}</span>
+                    <div class="list-actions">
+                        <a href="{{ url_for('view_list', user_id=user.id, list_id=list.id) }}" class="btn btn-primary" style="padding: 5px 10px; font-size: 13px;">Переглянути</a>
+
+                        <form method="POST" action="{{ url_for('list_delete', user_id=user.id, list_id=list.id) }}">
+                            <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 13px;">🗑️</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #777; text-align: center; margin-top: 20px;">У вас ще немає списків.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

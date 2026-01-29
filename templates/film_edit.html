@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Редагування фільму - MyMovies{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='form.css') }}">
+{% endblock %}
+
+{% block search_form %}
+    <!-- Приховуємо пошук -->
+{% endblock %}
+
+{% block content %}
+<section class="content">
+    <!-- Додаємо клас container--wide для ширшої форми -->
+    <div class="container container--wide">
+        <h2>Редагування: {{ film.name }}</h2>
+
+        <form method="POST" action="{{ url_for('film_edit', film_id=film.id) }}">
+
+            <div class="form-row">
+                <div>
+                    <label>Назва:</label>
+                    <input type="text" name="name" value="{{ film.name }}" required>
+                </div>
+                <div>
+                    <label>Рік виходу:</label>
+                    <input type="date" name="date" value="{{ film.date }}" required>
+                </div>
+            </div>
+
+            <label>Постер (URL):</label>
+            <input type="text" name="poster" value="{{ film.poster }}">
+
+            <div class="form-row">
+                <div>
+                    <label>Країна:</label>
+                    <select name="country">
+                        <option value="{{ film.country_name }}" selected>{{ film.country_name }}</option>
+                        {% if countries %}
+                            {% for one_country in countries %}
+                                {% if one_country.country_name != film.country_name %}
+                                    <option value="{{ one_country.country_name }}">{{ one_country.country_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div>
+                    <label>Жанр:</label>
+                    <select name="genre">
+                        <option value="{{ film.genre }}" selected>{{ film.genre }}</option>
+                        {% if genres %}
+                            {% for genre in genres %}
+                                {% if genre.genre != film.genre %}
+                                    <option value="{{ genre.genre }}">{{ genre.genre }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </div>
+
+            <label>Актори (через кому):</label>
+            <input type="text" name="actors" value="{{ film.actor }}">
+
+            <div class="form-row">
+                <div>
+                    <label>Рейтинг (1-10):</label>
+                    <input type="number" name="rating" min="1" max="10" value="{{ film.rating }}" required>
+                </div>
+                <div>
+                    <label>Тривалість (хв):</label>
+                    <input type="number" name="duration" value="{{ film.duration }}" required>
+                </div>
+            </div>
+
+            <label>Опис:</label>
+            <textarea name="description" required>{{ film.description }}</textarea>
+
+            <div class="form-row" style="margin-top: 10px;">
+                <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                <a href="{{ url_for('film_info', film_id=film.id) }}" class="btn btn-danger" style="text-align: center; margin-top: 20px; display: flex; align-items: center; justify-content: center;">Скасувати</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

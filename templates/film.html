@@ -1,56 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Search Filter</title>
+{% extends "base.html" %}
+{% block title %}Пошук фільмів - MyMovies{% endblock %}
+{% block content %}
+    {% block extra_styles %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<form action="/films" method="get">
-    <label name="name">Name: </label>
-    <input type="text" name="name">
-    <label name="tear">Year: </label>
-    <input type="number" name="year">
-    <select name="countries">
-        <option></option>
-        {% for one_country in countries %}
-            <option value="{{ one_country }}">{{ one_country["country_name"] }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit" name="search">Search</button>
-</form>
+    {% endblock %}
+    {% if films %}
+        <section class="content">
+            {% for film in films %}
+            <div class="card">
+    <!--            {% if film.poster %}-->
+    <!--                <div class="card-image">-->
+    <!--                    <img src="{{ film.poster }}" alt="Постер {{ film.name }}" style="max-width: 200px;">-->
+    <!--                </div>-->
+    <!--            {% endif %}-->
 
+                <div class="card-info">
+                    <h3 class="card-title">
+                        <a href="/films/{{ film.id }}">{{ film.name }}</a>
+                    </h3>
 
-{% if films %}
-    <section class="content">
-        {% for film in films %}
-        <div class="card">
-            {% if film.poster %}
-                <div class="card-image">
-                    <img src="{{ film.poster }}" alt="Постер {{ film.name }}" style="max-width: 200px;">
+                    <div class="card-meta">
+                        <span title="Рік виходу">📅 {{ film.date.year }}</span>
+                        <span title="Рейтинг">⭐ {{ film.rating }}/10</span>
+                        <span title="Тривалість">⏳ {{ film.duration }} хв.</span>
+                        <span title="Жанр">🎭 {{ film.genre }}</span>
+                    </div>
                 </div>
-            {% endif %}
-
-            <div class="card-info">
-                <h3 class="card-title">
-                    <a href="/films/{{ film.id }}">{{ film.name }}</a>
-                </h3>
-
-                <div class="card-meta">
-                    <span title="Рік виходу">📅 {{ film.year }}</span>
-                    <span title="Рейтинг">⭐ {{ film.rating }}/10</span>
-                    <span title="Тривалість">⏳ {{ film.duration }} хв.</span>
-                    <span title="Жанр">🎭 {{ film.genre }}</span>
-                </div>
-
-<!--                <div class="card-footer">-->
-<!--                    <small>Дата додавання: {{ film.added_at }}</small>-->
-<!--                </div>-->
             </div>
-        </div>
-        {% endfor %}
-    </section>
-{% endif %}
-
-</body>
-</html>
+            {% endfor %}
+        </section>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}{{film.name}} - MyMovies{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% endblock %}
+
+{% block content %}
+    <section class="film-details-container">
+        <div class="film-header">
+            <h1 class="film-title">{{ film.name }}</h1>
+        </div>
+
+        <div class="film-content-wrapper">
+            <!-- Ліва колонка: Постер -->
+            <div class="film-poster">
+                {% if film.poster %}
+                    <img src="{{ film.poster }}" alt="Постер {{ film.name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x450?text=No+Poster" alt="No Poster">
+                {% endif %}
+            </div>
+
+            <!-- Права колонка: Інформація -->
+            <div class="film-info-side">
+                <div class="film-meta-large">
+                    <span title="Рік виходу">📅 {{ film.date.year }}</span>
+                    <span title="Рейтинг">⭐ {{ film.rating }}/10</span>
+                    <span title="Тривалість">⏳ {{ film.duration }} хв.</span>
+                    <span title="Жанр">🎭 {{ film.genre }}</span>
+                    <span title="Країна">🌍 {{ film.country_name }}</span>
+                </div>
+
+                {% if film.actor %}
+                <div class="film-actors" style="margin-top: 20px;">
+                    <h3>Актори:</h3>
+                    <p>{{ film.actor }}</p>
+                </div>
+                {% endif %}
+
+                <div class="film-description">
+                    <h3>Опис:</h3>
+                    <p>{{ film.description }}</p>
+                </div>
+
+                <!-- Кнопки дій -->
+                <div class="film-actions" style="margin-top: 30px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+
+                    <!-- Додавання до списку (тільки для залогінених) -->
+                    {% if session.get('user_id') and user_lists %}
+                    <form method="POST" action="{{ url_for('add_to_list', film_id=film.id) }}" style="display: flex; gap: 10px; align-items: center;">
+                        <select name="list_id" required style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+                            <option value="" disabled selected>Оберіть список</option>
+                            {% for list in user_lists %}
+                                <option value="{{ list.id }}">{{ list.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary" style="padding: 8px 15px;">➕ Додати до списку</button>
+                    </form>
+                    {% endif %}
+
+                    <form method="GET" action="{{ url_for('film_edit', film_id = film.id)}}">
+                        <button type="submit" class="btn btn-success">✏️ Оновити</button>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('film_delete', film_id = film.id)}}">
+                        <button type="submit" class="btn btn-danger">🗑️ Видалити</button>
+                    </form>
+
+
+                </div>
+            </div>
+        </div>
+
+        <div class="reviews-section">
+            <h3 class="reviews-title">Відгуки глядачів</h3>
+
+            <div class="review-form">
+                <h4>Залишити свій відгук</h4>
+                <form method="POST" action="{{ url_for('create_film_rating', film_id=film.id) }}">
+                    <textarea name="description" placeholder="Напишіть свої враження про фільм..." required></textarea>
+
+                    <div class="form-actions" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="rating-input" style="display: flex; align-items: center; gap: 10px;">
+                            <label for="grade">Оцінка:</label>
+                            <input type="number" name="grade" id="grade" min="1" max="10" value="10" required style="width: 60px;">
+                            <span>/ 10</span>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: auto;">Надіслати відгук</button>
+                    </div>
+                </form>
+            </div>
+            <!-- Список відгуків -->
+            <div class="reviews-list">
+                {% if film_feedbacks %}
+                    {% for feedback in film_feedbacks %}
+                        <div class="review-card">
+                            <div class="review-header">
+                                <span class="review-author">Користувач {{ feedback.user.login }}</span>
+                                <span class="review-rating">⭐ {{ feedback.grade }}/10</span>
+                            </div>
+                            <div class="review-text"> {{ feedback.description }} </div>
+                            <div class="review-text">
+                                {% if feedback_id %}
+                                    {% if session.get('user_id') == feedback.user_id and feedback_id == feedback.id %}
+                                        <form method="POST" action="{{ url_for('edit_film_rating', feedback_id=feedback.id, film_id=film.id) }}">
+                                            <textarea name="description">{{ feedback.description }}</textarea>
+                                            <input type="number" name="grade" value="{{ feedback.grade }}" min="1" max="10">
+                                            <button type="submit" class="btn btn-success">Зберегти</button>
+                                            <a href="{{ url_for('film_info', film_id=film.id) }}" class="btn btn-secondary">Скасувати</a>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    {% if session.get('user_id') == feedback.user_id %}
+                                        <a href="{{ url_for('edit_film_rating', feedback_id=feedback.id, film_id=film.id) }}" class="btn btn-primary">Редагувати</a>
+                                        <form method="POST" action="{{ url_for('film_ratings_delete', film_id=film.id, feedback_id=feedback.id) }}">
+                                            <button type="submit" class="btn btn-danger">Видалити</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                {% else %}
+                    <div style="text-align: center; padding: 40px; color: #777; background: #f9f9f9; border-radius: 10px;">
+                        <p style="font-size: 1.2rem; margin-bottom: 10px;">📭 Поки що немає відгуків.</p>
+                        <p>Будьте першим, хто поділиться враженнями!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

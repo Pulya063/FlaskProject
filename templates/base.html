@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}MyMovies{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    {% block extra_styles %}{% endblock %}
+</head>
+<body>
+<header class="site-header">
+    <div class="header-top">
+        <div class="logo">
+            <a href="/">🎬 MyMovies</a>
+        </div>
+        {% if session.get('user_id') %}
+            <div class="auth-buttons">
+                <a href="/users/{{ session.user_id }}" class="user-btn">👤 Мій профіль</a>
+                <a href="/films/new" methods = "GET" class="user-btn">➕ Додати новий фільм</a>
+                <a href="/logout" class="user-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white;">Вийти</a>
+            </div>
+        {% else %}
+            <div class="auth-buttons">
+                <!-- Використовуємо нові класи кнопок -->
+                <a href="/login" class="btn btn-primary">Вхід</a>
+                <a href="/register" class="btn btn-success">Реєстрація</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% block search_form %}
+    <form action="/films" method="get" class="search-form">
+        <div class="search-main-row">
+            <input type="text" name="name" placeholder="Назва фільму..." class="main-input">
+            <!-- Кнопка пошуку -->
+            <button type="submit" name="search" class="btn btn-danger">🔍 Пошук</button>
+        </div>
+
+        <details class="filters-dropdown">
+            <summary>Додаткові фільтри</summary>
+
+            <div class="filter-group">
+                <div class="metadata-column">
+                    <input type="number" name="year" placeholder="Рік" min="1900" max="2099">
+
+                    <select name="country">
+                        <option value="" disabled selected>Оберіть країну</option>
+                        {% if countries %}
+                            {% for one_country in countries %}
+                                <option value="{{ one_country['country_name'] }}">{{ one_country.country_name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+
+                    <select name="genre">
+                        <option value="" disabled selected>Оберіть Жанр</option>
+                        {% if genres %}
+                            {% for genre in genres %}
+                                <option value="{{ genre['genre'] }}">{{ genre.genre }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div class="actor-column">
+                    <label>Актори:</label>
+                    <input type="text" name="first_name" placeholder="Ім'я">
+                    <input type="text" name="last_name" placeholder="Прізвище">
+                </div>
+            </div>
+        </details>
+    </form>
+    {% endblock %}
+</header>
+
+   {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <span class="flash-icon">
+                        {% if category == 'success' %}✅{% elif category == 'error' %}❌{% else %}ℹ️{% endif %}
+                    </span>
+                    <span class="flash-text">{{ message }}</span>
+                    <button class="flash-close" onclick="this.parentElement.style.display='none';">&times;</button>
+                </div>
+            {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>
