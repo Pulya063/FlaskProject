@@ -31,10 +31,14 @@
                     <span title="Країна">🌍 {{ film.country_name }}</span>
                 </div>
 
-                {% if film.actor %}
+                {% if film_actors %}
                 <div class="film-actors" style="margin-top: 20px;">
                     <h3>Актори:</h3>
-                    <p>{{ film.actor }}</p>
+                    {% for one_actor in film_actors %}
+                        <div class="checkbox-item">
+                            <p>{{ one_actor.first_name }} {{ one_actor.last_name }}</p>
+                        </div>
+                    {% endfor %}
                 </div>
                 {% endif %}
 
@@ -83,7 +87,7 @@
                     <div class="form-actions" style="display: flex; justify-content: space-between; align-items: center;">
                         <div class="rating-input" style="display: flex; align-items: center; gap: 10px;">
                             <label for="grade">Оцінка:</label>
-                            <input type="number" name="grade" id="grade" min="1" max="10" value="10" required style="width: 60px;">
+                            <input type="number" name="grade" id="grade" min="1" max="10" value="" required style="width: 60px;">
                             <span>/ 10</span>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width: auto;">Надіслати відгук</button>

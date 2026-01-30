@@ -56,8 +56,19 @@
                 </div>
             </div>
 
-            <label>Актори (через кому):</label>
-            <input type="text" name="actors" placeholder="">
+            <div>
+                <label>Актори:</label>
+                <div class="checkbox-list">
+                    {% if all_actors %}
+                        {% for one_actor in all_actors %}
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="actor_{{ one_actor.id }}" name="actor[]" value="{{ one_actor.id }}">
+                                <label for="actor_{{ one_actor.id }}">{{ one_actor.first_name }} {{ one_actor.last_name }}</label>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
 
             <div class="form-row">
                 <div>

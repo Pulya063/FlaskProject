@@ -127,6 +127,38 @@ button:hover {
     transform: translateY(-2px);
 }
 
+/* ===== Checkbox List ===== */
+.checkbox-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #475569;
+    border-radius: 12px;
+    background: var(--bg-input);
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.checkbox-item label {
+    margin-bottom: 0;
+    text-transform: none;
+    cursor: pointer;
+    color: var(--text-main);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .form-row {

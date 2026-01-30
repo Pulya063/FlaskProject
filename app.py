@@ -117,7 +117,7 @@ def user_login_post():
 
         session['user_id'] = result_user.id
         return redirect(url_for('main_page'))
-    except Exception as e:
+    except Exception:
         flash('Сталася помилка при вході. Спробуйте ще раз.', 'error')
         return redirect(url_for('login_page'))
 
@@ -210,21 +210,22 @@ def film_create_page():
     database.get_db()
     countries = database.db_session.execute(select(Country).order_by(Country.country_name)).scalars().all()
     genres = database.db_session.execute(select(Genre).order_by(Genre.genre)).scalars().all()
-    return render_template('film_create.html', countries=countries, genres=genres)
+    actors = database.db_session.execute(select(Actor).order_by(Actor.id)).scalars().all()
+    return render_template('film_create.html', countries=countries, genres=genres, all_actors=actors)
+
 
 
 @app.route('/films', methods=['GET', 'POST'])
 def films():
     database.get_db()
     if request.method == "POST":
-        # Створення нового фільму
         try:
             name = request.form.get('name')
             year_str = request.form.get('date')
             poster = request.form.get('poster')
             country_name = request.form.get('country')
             genre_val = request.form.get('genre')
-            actors = request.form.get('actors')
+            actors_ids = request.form.getlist('actor[]')
             rating = request.form.get('rating')
             duration = request.form.get('duration')
             description = request.form.get('description')
@@ -247,7 +248,6 @@ def films():
                 poster=poster,
                 country_name=country_name,
                 genre=genre_val,
-                actor=actors,
                 rating=rating_int,
                 duration=duration_int,
                 description=description,
@@ -255,6 +255,13 @@ def films():
             )
             
             database.db_session.add(new_film)
+            database.db_session.flush()
+
+            if actors_ids:
+                for actor_id in actors_ids:
+                    actor_film = ActorFilm(film_id=new_film.id, actor_id=int(actor_id))
+                    database.db_session.add(actor_film)
+
             database.db_session.commit()
             
             flash("Фільм успішно створено!", "success")
@@ -266,7 +273,6 @@ def films():
             return redirect(url_for('film_create_page'))
 
     else:
-        # Пошук фільмів (GET)
         filter_params = request.args
 
         query = select(Film)
@@ -312,12 +318,17 @@ def film_info(film_id):
         if not res_film:
             flash("Не вдалос знайти фільм", "danger")
             return redirect(url_for('films'))
-            
+
+        film_actors = database.db_session.execute(select(Actor).join(ActorFilm).where(ActorFilm.film_id == film_id)).scalars().all()
+
         feedbacks = database.db_session.execute(select(Feedback).where(Feedback.film_id == film_id).order_by(Feedback.added_at)).scalars().all()
+
+        countries = database.db_session.execute(select(Country)).scalars().all()
+        genres = database.db_session.execute(select(Genre)).scalars().all()
 
         user_lists = database.db_session.execute(select(MovieList).where(MovieList.user_id == session['user_id'])).scalars().all()
 
-        return render_template("film_info.html", film=res_film, film_feedbacks=feedbacks, user_lists=user_lists)
+        return render_template("film_info.html", film=res_film, film_feedbacks=feedbacks, user_lists=user_lists, film_actors = film_actors, countries=countries, genres=genres)
     except Exception as e:
         flash(f'Помилка завантаження сторінки: {str(e)}', 'error')
         return redirect(url_for('films'))
@@ -687,4 +698,4 @@ def add_to_list(film_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, port=7000)

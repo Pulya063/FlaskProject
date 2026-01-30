@@ -58,8 +58,6 @@ class Film(Base):
 
     genre = Column("genre", String)
 
-    actor = Column("actor", String)
-
     description = Column(String, nullable=False)
 
     rating = Column(Integer, nullable=False)
