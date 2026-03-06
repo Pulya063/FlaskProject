@@ -13,5 +13,10 @@ Base = declarative_base()
 
 Base.query = db_session.query_property()
 
-def get_db():
+
+def init_db():
     Base.metadata.create_all(bind=engine)
+
+
+def get_db():
+    return db_session

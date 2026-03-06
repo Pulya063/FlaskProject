@@ -8,12 +8,6 @@
         <section class="content">
             {% for film in films %}
             <div class="card">
-    <!--            {% if film.poster %}-->
-    <!--                <div class="card-image">-->
-    <!--                    <img src="{{ film.poster }}" alt="Постер {{ film.name }}" style="max-width: 200px;">-->
-    <!--                </div>-->
-    <!--            {% endif %}-->
-
                 <div class="card-info">
                     <h3 class="card-title">
                         <a href="/films/{{ film.id }}">{{ film.name }}</a>

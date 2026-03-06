@@ -2,16 +2,16 @@ import functools
 from flask import Flask, request, session, render_template, redirect, url_for, flash
 from sqlalchemy import select, insert, update, delete, extract
 from sqlalchemy.exc import IntegrityError
-from datetime import datetime, date
-
-from sqlalchemy.orm import selectinload
 
 from database.models import *
 from database import database
 from other.mail_sender import send_registration_email
+import os
+import dotenv
 
 app = Flask(__name__)
-app.secret_key = "super secret key"
+MY_KEY = dotenv.load_dotenv('SECRET_KEY')
+app.secret_key = MY_KEY
 
 
 def login_check(func):
@@ -28,12 +28,12 @@ def login_check(func):
 @app.route('/', methods=['GET'])
 def main_page():
     try:
-        database.get_db()
+        db = database.get_db()
 
-        countries = database.db_session.execute(select(Country).order_by(Country.country_name.desc())).scalars().all()
-        genres = database.db_session.execute(select(Genre).order_by(Genre.genre.desc())).scalars().all()
+        countries = db.execute(select(Country).order_by(Country.country_name.desc())).scalars().all()
+        genres = db.execute(select(Genre).order_by(Genre.genre.desc())).scalars().all()
 
-        result_films = database.db_session.execute(select(Film).order_by(Film.id.desc()).limit(10)).scalars().all()
+        result_films = db.execute(select(Film).order_by(Film.id.desc()).limit(10)).scalars().all()
 
         return render_template('film.html', films=result_films, countries=countries, genres=genres)
     except Exception as e:
@@ -48,7 +48,7 @@ def registration_page():
 
 @app.route('/register', methods=['POST'])
 def user_register():
-    database.get_db()
+    db = database.get_db()
     if request.method == 'POST':
         first_name = request.form['first_name']
         last_name = request.form['last_name']
@@ -59,12 +59,12 @@ def user_register():
         phone_number = request.form['phone_number']
         additional_info = request.form['additional_info']
         get_phone_number = select(User).where(User.phone_number == phone_number)
-        result_get_phone_number = database.db_session.execute(get_phone_number).scalar()
+        result_get_phone_number = db.execute(get_phone_number).scalar()
 
         if result_get_phone_number:
             return render_template('message.html', details="Номер телефону вже зареєстрований", type="error")
 
-        result_get_login = database.db_session.execute(select(User).where(User.login == login)).scalar_one_or_none()
+        result_get_login = db.execute(select(User).where(User.login == login)).scalar_one_or_none()
 
         if result_get_login:
             return render_template('message.html', details="Логін вже зареєстрований", type="error")
@@ -79,17 +79,17 @@ def user_register():
                                             email=email, phone_number=phone_number, birth_date=birth_date_obj,
                                             additional_info=additional_info if additional_info else None)
 
-            database.db_session.execute(new_user)
-            database.db_session.commit()
+            db.execute(new_user)
+            db.commit()
 
             send_registration_email.delay(email, first_name)
             flash('Реєстрація успішна!', 'success')
             return redirect(url_for('login_page'))
         except IntegrityError:
-            database.db_session.rollback()
+            db.rollback()
             return render_template('message.html', details="Помилка реєстрації. Можливо, логін або телефон вже існує.", type="error")
         except Exception as e:
-            database.db_session.rollback()
+            db.rollback()
             return render_template('message.html', details=f"Помилка реєстрації: {str(e)}", type="error")
 
 
@@ -101,7 +101,7 @@ def login_page():
 @app.route('/login', methods=['POST'])
 def user_login_post():
     try:
-        database.get_db()
+        db = database.get_db()
         login = request.form.get('login')
         password = request.form.get('password')
 
@@ -109,7 +109,7 @@ def user_login_post():
             flash('Будь ласка, введіть логін та пароль.', 'error')
             return redirect(url_for('login_page'))
 
-        result_user = database.db_session.execute(select(User).where(User.login == login)).scalar_one_or_none()
+        result_user = db.execute(select(User).where(User.login == login)).scalar_one_or_none()
 
         if result_user is None or result_user.password != password:
             flash('Невірний логін або пароль. Спробуйте ще раз.', 'error')
@@ -131,15 +131,15 @@ def user_logout():
 
 @app.route('/users', methods=['GET'])
 def users():
-    database.get_db()
-    result = database.db_session.execute(select(User)).scalars().all()
+    db = database.get_db()
+    result = db.execute(select(User)).scalars().all()
     return str([f"{u.first_name} {u.last_name} ({u.login})" for u in result])
 
 
 @app.route('/users/<int:user_id>', methods=['GET', 'POST'])
 @login_check
 def user_profile(user_id):
-    database.get_db()
+    db = database.get_db()
     
     # Перевірка прав доступу (користувач може бачити тільки свій профіль)
     if session.get('user_id') != user_id:
@@ -156,12 +156,12 @@ def user_profile(user_id):
         birth_date = request.form['birth_date']
         additional_info = request.form['additional_info']
 
-        existing_user = database.db_session.execute(select(User).where(User.login == login)).scalar()
+        existing_user = db.execute(select(User).where(User.login == login)).scalar()
         if existing_user and existing_user.id != user_id:
             flash("Логін вже використовується іншим користувачем", "error")
             return redirect(url_for('user_profile', user_id=user_id))
 
-        existing_phone = database.db_session.execute(select(User).where(User.phone_number == phone_number)).scalar()
+        existing_phone = db.execute(select(User).where(User.phone_number == phone_number)).scalar()
         if existing_phone and existing_phone.id != user_id:
             flash("Номер телефону вже використовується іншим користувачем", "error")
             return redirect(url_for('user_profile', user_id=user_id))
@@ -176,30 +176,30 @@ def user_profile(user_id):
                                                                     login=login, password=password, email=email,
                                                                     phone_number=phone_number, birth_date=birth_date_obj,
                                                                     additional_info=additional_info if additional_info else None)
-        database.db_session.execute(update_user)
-        database.db_session.commit()
+        db.execute(update_user)
+        db.commit()
         flash("Профіль успішно оновлено", "success")
         return redirect(url_for('user_profile', user_id = user_id))
     else:
-        res_user_info = database.db_session.execute(select(User).where(User.id == user_id)).scalar()
+        res_user_info = db.execute(select(User).where(User.id == user_id)).scalar()
         # Завантажуємо списки користувача
-        user_lists = database.db_session.execute(select(MovieList).where(MovieList.user_id == user_id)).scalars().all()
+        user_lists = db.execute(select(MovieList).where(MovieList.user_id == user_id)).scalars().all()
         return render_template('user_profile.html', user=res_user_info, user_lists=user_lists)
 
 @app.route('/users/<int:user_id>/delete', methods=['POST'])
 @login_check
 def user_delete(user_id):
-        database.get_db()
+        db = database.get_db()
         deleted_user = delete(User).where(User.id == user_id)
 
         try:
-            database.db_session.execute(deleted_user)
-            database.db_session.commit()
+            db.execute(deleted_user)
+            db.commit()
             session.clear()
             flash('Акаунт успішно видалено', 'success')
             return redirect(url_for('main_page'))
         except Exception as e:
-            database.db_session.rollback()
+            db.rollback()
             flash(f'Помилка видалення користувача: {str(e)}', 'error')
             return redirect(url_for('user_profile', user_id=user_id))
 
@@ -207,17 +207,17 @@ def user_delete(user_id):
 @app.route('/films/new', methods=['GET'])
 @login_check
 def film_create_page():
-    database.get_db()
-    countries = database.db_session.execute(select(Country).order_by(Country.country_name)).scalars().all()
-    genres = database.db_session.execute(select(Genre).order_by(Genre.genre)).scalars().all()
-    actors = database.db_session.execute(select(Actor).order_by(Actor.id)).scalars().all()
+    db = database.get_db()
+    countries = db.execute(select(Country).order_by(Country.country_name)).scalars().all()
+    genres = db.execute(select(Genre).order_by(Genre.genre)).scalars().all()
+    actors = db.execute(select(Actor).order_by(Actor.id)).scalars().all()
     return render_template('film_create.html', countries=countries, genres=genres, all_actors=actors)
 
 
 
 @app.route('/films', methods=['GET', 'POST'])
 def films():
-    database.get_db()
+    db = database.get_db()
     if request.method == "POST":
         try:
             name = request.form.get('name')
@@ -254,21 +254,21 @@ def films():
                 added_at=datetime.now()
             )
             
-            database.db_session.add(new_film)
-            database.db_session.flush()
+            db.add(new_film)
+            db.flush()
 
             if actors_ids:
                 for actor_id in actors_ids:
                     actor_film = ActorFilm(film_id=new_film.id, actor_id=int(actor_id))
-                    database.db_session.add(actor_film)
+                    db.add(actor_film)
 
-            database.db_session.commit()
+            db.commit()
             
             flash("Фільм успішно створено!", "success")
             return redirect(url_for('film_info', film_id=new_film.id))
 
         except Exception as e:
-            database.db_session.rollback()
+            db.rollback()
             flash(f"Помилка створення: {str(e)}", "error")
             return redirect(url_for('film_create_page'))
 
@@ -277,8 +277,8 @@ def films():
 
         query = select(Film)
 
-        countries = database.db_session.execute(select(Country)).scalars().all()
-        genres = database.db_session.execute(select(Genre)).scalars().all()
+        countries = db.execute(select(Country)).scalars().all()
+        genres = db.execute(select(Genre)).scalars().all()
 
         for key, value in filter_params.items():
             if value:
@@ -297,7 +297,7 @@ def films():
 
         try:
             query = query.order_by(Film.id.desc()) # Нові зверху
-            result = database.db_session.execute(query).scalars().all()
+            result = db.execute(query).scalars().all()
 
             if not result and filter_params:
                 flash("Фільм не знайдено", "error")
@@ -305,28 +305,31 @@ def films():
             return render_template('film.html', films=result, countries=countries, genres=genres)
         except Exception as e:
             flash(f'Помилка завантаження фільмів: {str(e)}', 'error')
-        countries = database.db_session.execute(select(Country)).scalars().all()
-        genres = database.db_session.execute(select(Genre)).scalars().all()
-        database.db_session.close()
+        countries = db.execute(select(Country)).scalars().all()
+        genres = db.execute(select(Genre)).scalars().all()
+        db.close()
         return render_template('film.html', films=[], countries=countries, genres=genres)
 
 @app.route('/films/<int:film_id>', methods=['GET'])
 def film_info(film_id):
-    database.get_db()
+    db = database.get_db()
     try:
-        res_film = database.db_session.execute(select(Film).where(Film.id == film_id)).scalar()
+        res_film = db.execute(select(Film).where(Film.id == film_id)).scalar()
         if not res_film:
             flash("Не вдалос знайти фільм", "danger")
             return redirect(url_for('films'))
 
-        film_actors = database.db_session.execute(select(Actor).join(ActorFilm).where(ActorFilm.film_id == film_id)).scalars().all()
+        film_actors = db.execute(select(Actor).join(ActorFilm).where(ActorFilm.film_id == film_id)).scalars().all()
 
-        feedbacks = database.db_session.execute(select(Feedback).where(Feedback.film_id == film_id).order_by(Feedback.added_at)).scalars().all()
+        feedbacks = db.execute(select(Feedback).where(Feedback.film_id == film_id).order_by(Feedback.added_at)).scalars().all()
 
-        countries = database.db_session.execute(select(Country)).scalars().all()
-        genres = database.db_session.execute(select(Genre)).scalars().all()
+        countries = db.execute(select(Country)).scalars().all()
+        genres = db.execute(select(Genre)).scalars().all()
 
-        user_lists = database.db_session.execute(select(MovieList).where(MovieList.user_id == session['user_id'])).scalars().all()
+        user_lists = ""
+
+        if session.get('user_id'):
+            user_lists = db.execute(select(MovieList).where(MovieList.user_id == session['user_id'])).scalars().all()
 
         return render_template("film_info.html", film=res_film, film_feedbacks=feedbacks, user_lists=user_lists, film_actors = film_actors, countries=countries, genres=genres)
     except Exception as e:
@@ -335,14 +338,14 @@ def film_info(film_id):
 
 @app.route('/films/<int:film_id>/edit', methods=['GET', 'POST'])
 def film_edit(film_id):
-    database.get_db()
+    db = database.get_db()
     
     if request.method == 'GET':
-        res_film = database.db_session.execute(select(Film).where(Film.id == film_id)).scalar()
+        res_film = db.execute(select(Film).where(Film.id == film_id)).scalar()
 
-        countries = database.db_session.execute(select(Country)).scalars().all()
-        genres = database.db_session.execute(select(Genre)).scalars().all()
-        database.db_session.close()
+        countries = db.execute(select(Country)).scalars().all()
+        genres = db.execute(select(Genre)).scalars().all()
+        db.close()
 
         if not res_film:
             flash("Фільм не знайдено", "error")
@@ -364,7 +367,7 @@ def film_edit(film_id):
             country_name = request.form.get('country')
             genre_val = request.form.get('genre')
 
-            film_check = database.db_session.execute(select(Film).where(Film.id == film_id)).scalar()
+            film_check = db.execute(select(Film).where(Film.id == film_id)).scalar()
             if not film_check:
                 flash("Фільм не знайдено", "error")
                 return redirect(url_for('films'))
@@ -398,17 +401,17 @@ def film_edit(film_id):
                 'country_name': country_name
             }
 
-            database.db_session.execute(update(Film).where(Film.id == film_id).values(**update_values))
-            database.db_session.commit()
+            db.execute(update(Film).where(Film.id == film_id).values(**update_values))
+            db.commit()
             flash("Фільм успішно оновлено", "success")
             return redirect(url_for('film_info', film_id=film_id))
         except IntegrityError as e:
-            database.db_session.rollback()
+            db.rollback()
             print(f"DEBUG: IntegrityError: {e}")
             flash("Помилка оновлення фільму (IntegrityError)", "error")
             return redirect(url_for('film_edit', film_id=film_id))
         except Exception as e:
-            database.db_session.rollback()
+            db.rollback()
             print(f"DEBUG: Error in film_edit: {e}")
             flash(f"Помилка при оновленні: {str(e)}", "error")
             return redirect(url_for('film_edit', film_id=film_id))
@@ -417,30 +420,30 @@ def film_edit(film_id):
 @app.route('/films/<int:film_id>/delete', methods=['POST'])
 def film_delete(film_id):
     try:
-        database.get_db()
-        film_check = database.db_session.execute(select(Film).where(Film.id == film_id)).scalar()
+        db = database.get_db()
+        film_check = db.execute(select(Film).where(Film.id == film_id)).scalar()
         if not film_check:
             flash("Фільм не знайдено", "error")
             return redirect(url_for('films'))
 
         stmt = delete(Film).where(Film.id == film_id)
-        database.db_session.execute(stmt)
-        database.db_session.commit()
+        db.execute(stmt)
+        db.commit()
         flash(f'Фільм {film_id} видалено!', 'success')
         return redirect(url_for('films'))
     except Exception as e:
-        database.db_session.rollback()
+        db.rollback()
         flash(f"Помилка видалення: {str(e)}", "error")
         return redirect(url_for('film_info', film_id=film_id))
 
 @app.route('/films/<int:film_id>/rating', methods=['POST'])
 @login_check
 def create_film_rating(film_id):
-    database.get_db()
+    db = database.get_db()
     try:
         user_id = session.get('user_id')
         
-        film_check = database.db_session.execute(select(Film).where(Film.id == film_id)).scalar()
+        film_check = db.execute(select(Film).where(Film.id == film_id)).scalar()
         if not film_check:
             return "Фільм не знайдено", 404
 
@@ -461,24 +464,25 @@ def create_film_rating(film_id):
             return "Опис обов'язковий", 400
 
         stmt = insert(Feedback).values(film_id=film_id, user_id=user_id, grade=grade_int, description=description)
-        database.db_session.execute(stmt)
-        database.db_session.commit()
+        db.execute(stmt)
+        db.commit()
         
         flash('Відгук успішно додано!', 'success')
         return redirect(url_for('film_info', film_id=film_id))
     except IntegrityError:
-        database.db_session.rollback()
+        db.rollback()
         flash("Помилка додавання відгуку", "error")
         return redirect(url_for('film_info', film_id=film_id))
     except Exception as e:
-        database.db_session.rollback()
+        db.rollback()
         flash(f"Помилка: {str(e)}", "error")
         return redirect(url_for('film_info', film_id=film_id))
 
 @app.route('/films/<int:film_id>/rating/<int:feedback_id>/update', methods=['POST', 'GET'])
+@login_check
 def edit_film_rating(feedback_id, film_id):
-    database.get_db()
-    film_check = database.db_session.execute(select(Film).where(Film.id == film_id)).scalar()
+    db = database.get_db()
+    film_check = db.execute(select(Film).where(Film.id == film_id)).scalar()
     if request.method == 'POST':
         if not film_check:
             flash("Фільм не знайдено")
@@ -506,16 +510,16 @@ def edit_film_rating(feedback_id, film_id):
             return redirect(url_for('film_info', film_id=film_id))
 
         try:
-            updated_feedback = database.db_session.execute(update(Feedback).where(Feedback.id == feedback_id).values(grade=grade_int, description=description))
-            database.db_session.commit()
+            updated_feedback = db.execute(update(Feedback).where(Feedback.id == feedback_id).values(grade=grade_int, description=description))
+            db.commit()
             flash("Відгук успішно оновлено!")
             return redirect(url_for('film_info', film_id=film_id))
         except Exception as e:
-            database.db_session.rollback()
+            db.rollback()
             flash(f"Помилка оновлення відгуку: {str(e)}")
             return redirect(url_for('film_info', film_id=film_id))
 
-    feedbacks = database.db_session.execute(
+    feedbacks = db.execute(
         select(Feedback).where(Feedback.film_id == film_id).order_by(Feedback.added_at)).scalars().all()
     return render_template('film_info.html', film=film_check, film_feedbacks=feedbacks, feedback_id=feedback_id)
 
@@ -524,9 +528,9 @@ def edit_film_rating(feedback_id, film_id):
 @login_check
 def film_ratings_delete(film_id, feedback_id):
     try:
-        database.get_db()
+        db = database.get_db()
         # Перевірка прав (чи це відгук поточного юзера)
-        feedback_check = database.db_session.execute(
+        feedback_check = db.execute(
             select(Feedback).where(Feedback.id == feedback_id, Feedback.film_id == film_id, Feedback.user_id == session.get('user_id'))
         ).scalar()
         
@@ -535,13 +539,13 @@ def film_ratings_delete(film_id, feedback_id):
             return redirect(url_for('film_info', film_id=film_id))
 
         stmt = delete(Feedback).where(Feedback.id == feedback_id)
-        database.db_session.execute(stmt)
-        database.db_session.commit()
+        db.execute(stmt)
+        db.commit()
         
         flash('Відгук видалено!', 'success')
         return redirect(url_for('film_info', film_id=film_id))
     except Exception as e:
-        database.db_session.rollback()
+        db.rollback()
         flash(f"Помилка видалення: {str(e)}", "error")
         return redirect(url_for('film_info', film_id=film_id))
 
@@ -550,7 +554,7 @@ def film_ratings_delete(film_id, feedback_id):
 @app.route('/users/<int:user_id>/lists', methods=['POST'])
 @login_check
 def create_list(user_id):
-    database.get_db()
+    db = database.get_db()
     if request.method == 'POST':
         list_name = request.form.get('list_name')
         if not list_name:
@@ -559,15 +563,15 @@ def create_list(user_id):
 
         try:
             new_list = MovieList(name=list_name, user_id=user_id)
-            database.db_session.add(new_list)
-            database.db_session.commit()
+            db.add(new_list)
+            db.commit()
 
             flash(f"Список '{list_name}' створено!", "success")
             return redirect(url_for('user_profile', user_id=user_id))
         except IntegrityError:
-            database.db_session.rollback()
+            db.rollback()
         except Exception as e:
-            database.db_session.rollback()
+            db.rollback()
             flash(f"Помилка створення списку: {str(e)}", "error")
             return redirect(url_for('user_profile', user_id=user_id))
 
@@ -575,9 +579,9 @@ def create_list(user_id):
 @login_check
 def film_ratings_edit(film_id, feedback_id):
     try:
-        database.get_db()
+        db = database.get_db()
         # Перевірка прав
-        feedback_check = database.db_session.execute(
+        feedback_check = db.execute(
             select(Feedback).where(Feedback.id == feedback_id, Feedback.film_id == film_id, Feedback.user_id == session.get('user_id'))
         ).scalar()
         
@@ -591,27 +595,27 @@ def film_ratings_edit(film_id, feedback_id):
         if new_description:
             # Оновлюємо
             stmt = update(Feedback).where(Feedback.id == feedback_id).values(description=new_description, grade=int(new_grade) if new_grade else feedback_check.grade)
-            database.db_session.execute(stmt)
-            database.db_session.commit()
+            db.execute(stmt)
+            db.commit()
             flash('Відгук оновлено!', 'success')
         
         return redirect(url_for('film_info', film_id=film_id))
     except Exception as e:
-        database.db_session.rollback()
+        db.rollback()
         flash(f"Помилка оновлення: {str(e)}", "error")
         return redirect(url_for('film_info', film_id=film_id))
 
 @app.route('/users/<int:user_id>/lists/<int:list_id>', methods=['GET'])
 @login_check
 def view_list(user_id, list_id):
-    database.get_db()
+    db = database.get_db()
     try:
-        list_check = database.db_session.execute(select(MovieList).where(MovieList.id == list_id, MovieList.user_id == user_id)).scalar()
+        list_check = db.execute(select(MovieList).where(MovieList.id == list_id, MovieList.user_id == user_id)).scalar()
         if not list_check:
             flash("Список не знайдено або доступ заборонено", "error")
             return redirect(url_for('user_profile', user_id=user_id))
 
-        film_list = database.db_session.execute(select(Film).join(FilmList, FilmList.film_id == Film.id).where(FilmList.list_id == list_id)).scalars().all()
+        film_list = db.execute(select(Film).join(FilmList, FilmList.film_id == Film.id).where(FilmList.list_id == list_id)).scalars().all()
 
         return render_template('user_list.html', list=list_check, films=film_list)
     except Exception as e:
@@ -623,19 +627,19 @@ def view_list(user_id, list_id):
 @login_check
 def list_delete(user_id, list_id):
     try:
-        database.get_db()
+        db = database.get_db()
         if session.get('user_id') != user_id:
             flash("Доступ заборонено", "error")
             return redirect(url_for('main_page'))
 
         stmt = delete(MovieList).where(MovieList.id == list_id, MovieList.user_id == user_id)
-        database.db_session.execute(stmt)
-        database.db_session.commit()
+        db.execute(stmt)
+        db.commit()
 
         flash('Список видалено!', 'success')
         return redirect(url_for('user_profile', user_id=user_id))
     except Exception as e:
-        database.db_session.rollback()
+        db.rollback()
         flash(f"Помилка видалення: {str(e)}", "error")
         return redirect(url_for('user_profile', user_id=user_id))
 
@@ -644,25 +648,25 @@ def list_delete(user_id, list_id):
 @login_check
 def user_list_item_delete(user_id, list_id, film_id):
     try:
-        database.get_db()
+        db = database.get_db()
         if session.get('user_id') != user_id:
             flash("Доступ заборонено", "error")
             return redirect(url_for('main_page'))
 
         stmt = delete(FilmList).where(FilmList.list_id == list_id, FilmList.film_id == film_id)
-        database.db_session.execute(stmt)
-        database.db_session.commit()
+        db.execute(stmt)
+        db.commit()
 
         flash('Фільм видалено зі списку!', 'success')
         return redirect(url_for('view_list', user_id=user_id, list_id=list_id))
     except Exception as e:
-        database.db_session.rollback()
+        db.rollback()
         return f"Помилка видалення: {str(e)}", 500
 
 @app.route('/films/<int:film_id>/add_to_list', methods=['POST'])
 @login_check
 def add_to_list(film_id):
-    database.get_db()
+    db = database.get_db()
     user_id = session.get('user_id')
     list_id = request.form.get('list_id')
 
@@ -672,27 +676,27 @@ def add_to_list(film_id):
             return redirect(url_for('film_info', film_id=film_id))
             
         # Перевірка, чи належить список користувачу
-        list_check = database.db_session.execute(select(MovieList).where(MovieList.id == list_id, MovieList.user_id == user_id)).scalar()
+        list_check = db.execute(select(MovieList).where(MovieList.id == list_id, MovieList.user_id == user_id)).scalar()
         if not list_check:
             flash("Список не знайдено або доступ заборонено", "error")
             return redirect(url_for('film_info', film_id=film_id))
             
         # Перевірка, чи фільм вже є в списку
-        exists = database.db_session.execute(select(FilmList).where(FilmList.list_id == list_id, FilmList.film_id == film_id)).scalar()
+        exists = db.execute(select(FilmList).where(FilmList.list_id == list_id, FilmList.film_id == film_id)).scalar()
         if exists:
             flash("Фільм вже є в цьому списку", "info")
             return redirect(url_for('film_info', film_id=film_id))
             
         # Додавання
         new_item = FilmList(list_id=list_id, film_id=film_id)
-        database.db_session.add(new_item)
-        database.db_session.commit()
+        db.add(new_item)
+        db.commit()
         
         flash("Фільм додано до списку!", "success")
         return redirect(url_for('film_info', film_id=film_id))
         
     except Exception as e:
-        database.db_session.rollback()
+        db.rollback()
         flash(f"Помилка додавання: {str(e)}", "error")
         return redirect(url_for('film_info', film_id=film_id))
 

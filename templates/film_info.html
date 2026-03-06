@@ -51,6 +51,7 @@
                 <div class="film-actions" style="margin-top: 30px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
 
                     <!-- Додавання до списку (тільки для залогінених) -->
+
                     {% if session.get('user_id') and user_lists %}
                     <form method="POST" action="{{ url_for('add_to_list', film_id=film.id) }}" style="display: flex; gap: 10px; align-items: center;">
                         <select name="list_id" required style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">

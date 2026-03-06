@@ -5,7 +5,7 @@ services:
     build: .
     container_name: flask_web
     ports:
-      - "5000:5000"
+      - "6000:6000"
     env_file:
       - .env
     environment:
