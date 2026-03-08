@@ -20,3 +20,5 @@ def init_db():
 
 def get_db():
     return db_session
+
+init_db()

@@ -10,8 +10,11 @@ import os
 import dotenv
 
 app = Flask(__name__)
-MY_KEY = dotenv.load_dotenv('SECRET_KEY')
-app.secret_key = MY_KEY
+dotenv.load_dotenv()
+app.secret_key = os.environ.get('SECRET_KEY')
+
+with app.app_context():
+    database.init_db()
 
 
 def login_check(func):
@@ -96,7 +99,6 @@ def user_register():
 @app.route('/login', methods=['GET'])
 def login_page():
     return render_template('login.html')
-
 
 @app.route('/login', methods=['POST'])
 def user_login_post():
@@ -702,4 +704,4 @@ def add_to_list(film_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=7000)
+    app.run(debug=True, host='0.0.0.0', port=7000)

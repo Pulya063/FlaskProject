@@ -5,14 +5,12 @@ services:
     build: .
     container_name: flask_web
     ports:
-      - "6000:6000"
+      - "7000:7000"
     env_file:
       - .env
     environment:
       - DB_HOST=db
       - RABBITMQ_HOST=rabbitmq
-    volumes:
-      - .:/app
     depends_on:
       - db
       - rabbitmq
@@ -28,8 +26,6 @@ services:
     environment:
       - DB_HOST=db
       - RABBITMQ_HOST=rabbitmq
-    volumes:
-      - .:/app
     depends_on:
       - db
       - rabbitmq
@@ -43,8 +39,6 @@ services:
     environment:
       - DB_HOST=db
       - RABBITMQ_HOST=rabbitmq
-    volumes:
-      - .:/app
     depends_on:
       - db
       - rabbitmq
